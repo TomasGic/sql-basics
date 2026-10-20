@@ -9,7 +9,7 @@ CREATE TABLE books (
     id INTEGER PRIMARY KEY,
     title TEXT NOT NULL,
     author_id INTEGER NOT NULL,
-    copies_total INTEGER NOT NULL CHECK (copies_total >= 0)
+    copies_total INTEGER NOT NULL CHECK (copies_total >= 0),
     FOREIGN KEY (author_id) REFERENCES authors(id)
 );
 
