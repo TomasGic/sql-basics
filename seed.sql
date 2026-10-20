@@ -36,7 +36,7 @@ INSERT INTO members (first_name, last_name, email, joined_on)
 VALUES ('Lubos', 'Valasek', 'lubos.valasek@example.com', '2026-04-05');
 
 -- inserting data into loans
-INSERT INTO (book_id, member_id, borrowed_on, due_on, returned_on) 
+INSERT INTO (book_id, member_id, borrowed_on, due_on, returned_on) VALUES 
 -- Loan 1: Returned on time
 (1, 1, '2026-09-01', '2026-09-15', '2026-09-10'),
 
