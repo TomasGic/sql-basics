@@ -27,3 +27,19 @@ SELECT author_id, COUNT(*) FROM books GROUP BY author_id;
 
 -- list 3 most recently joined members
 SELECT * from members ORDER BY joined_on DESC LIMIT 3;
+
+-- mark loan with id = 3 as returned today
+UPDATE loans 
+SET returned_on = date('now')
+WHERE id = 3;
+
+--increase the copies_total of one book by one
+UPDATE books
+SET copies_total = copies_total + 1
+WHERE title = 'Practical Object-Oriented Design in Ruby'
+
+--delete one member who does not have any active loans
+DELETE FROM members
+WHERE id NOT IN (
+    SELECT member_id from loans
+)
