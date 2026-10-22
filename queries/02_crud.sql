@@ -36,10 +36,10 @@ WHERE id = 3;
 --increase the copies_total of one book by one
 UPDATE books
 SET copies_total = copies_total + 1
-WHERE title = 'Practical Object-Oriented Design in Ruby'
+WHERE title = 'Practical Object-Oriented Design in Ruby';
 
---delete one member who does not have any active loans
+--delete one member who does not have any loans
 DELETE FROM members
 WHERE id NOT IN (
     SELECT member_id from loans
-)
+);
