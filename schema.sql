@@ -30,4 +30,4 @@ CREATE TABLE loans (
     returned_on TEXT,
     FOREIGN KEY (book_id) REFERENCES books(id),
     FOREIGN KEY (member_id) REFERENCES members(id)
-)
+);
