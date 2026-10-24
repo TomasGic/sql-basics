@@ -5,7 +5,7 @@ INSERT INTO authors (name) VALUES ('Jay Wengrow');
 
 -- inserting data into books
 INSERT INTO books (title, author_id, copies_total) 
-VALUES ('Practical Object-Oriented Design in Ruby', 1, 1);
+VALUES ('Practical Object-Oriented Design in Ruby', 1, 2);
 
 INSERT INTO books (title, author_id, copies_total) 
 VALUES ('Clean Code', 2, 2);
@@ -35,6 +35,9 @@ VALUES ('Lukas', 'Rohac', 'lukas.rohac@example.com', '2026-03-05');
 INSERT INTO members (first_name, last_name, email, joined_on)
 VALUES ('Lubos', 'Valasek', 'lubos.valasek@example.com', '2026-04-05');
 
+INSERT INTO members (first_name, last_name, email, joined_on)
+VALUES ('Lincoln', 'Clay', 'lincoln.clay@example.com', '2025-10-07');
+
 -- inserting data into loans
 INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on) VALUES 
 -- Loan 1: Returned on time
@@ -53,6 +56,7 @@ INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on) VALUES
 (5, 1, '2026-09-18', '2026-10-02', '2026-10-01'),
 
 -- Loan 6: Currently active
-(6, 3, '2026-10-12', '2026-10-26', NULL);
+(6, 3, '2026-10-12', '2026-10-26', NULL),
 
-
+-- Loan 7: Currently active
+(1, 2, '2026-10-23', '2026-11-06', NULL);
