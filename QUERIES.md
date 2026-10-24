@@ -1,4 +1,4 @@
-# Selected queries that taught me something
+## Selected queries that taught me something
 1. **Record a new loan (a member borrowing a book today)**
 
 ```sql
@@ -35,7 +35,7 @@ WHERE id NOT IN (
 );
 ```
 
-## What this query taught me
+**What this query taught me**:
 This query is a nested query which consists of an inner query (`SELECT member_id FROM loans`) and outer query (`DELETE FROM members WHERE id NOT IN`). In order to correctly execute this query SQLite has to break it down into several steps.
 
 * **Step 1: Run the inner query first**
@@ -48,3 +48,22 @@ It looks at the column `member_id` and checks whether each member_id is found in
     * If the ID is NOT in the list, SQLite marks that member row for deletion and deletes it.
 
     * If the ID IS in the list, SQLite skips that row and leaves the   member untouched.
+
+## Integrity checks 
+The `schema.sql` defines several constraints to prevent invalid data from being entered into the database. 
+
+1. **Foreign key constraints**: 
+Foreign key constraints protect the referential integrity of the database. If we add a record to a table where the foreign key references a primary key that doesn't exit in another table, the database engine will throw an error. In our case trying to add a loan with a book_id that doesn't exist in the `books` table will throw a runtime error: `FOREIGN KEY constraint failed`. This is because of this line that we added when creating the `loans` table: `FOREIGN KEY (book_id) REFERENCES books(id)`. It is important to note that in order for the foreign key constraint to work, we need to do run `PRAGMA foreign_keys = ON` at the start of each sqlite3 session. 
+
+2. **Constraints against duplicate records**: 
+If we want a table column in the database to only contain unique values, we can add a `UNIQUE` constraint to that column. In our database, we have set up the constraint to not allow two identical email addresses in the `members` table like this: `email TEXT NOT NULL UNIQUE`. Trying to add a member with an email address that already exists in the database will throw a runtime error: `UNIQUE constraint failed: members.email`.
+
+3. **Constraints against custom math/logic rules**:
+The `squema.sql` file defines three custom logic rules using the `CHECK` SQL keyword. 
+* `joined_on TEXT NOT NULL CHECK (date(joined_on) IS NOT NULL)`: This ensures that the value in the `joined_on` column is a date. 
+
+* `copies_total INTEGER NOT NULL CHECK (copies_total >= 0)`: Does not allow values below 0 to be entered into the `copies_total` column.
+
+* `due_on TEXT NOT NULL CHECK (due_on >= borrowed_on)`: This ensures that the due date cannot be before the date when the book was borrowed on. 
+
+If we try to insert a book with `copies_total = -1`, the database engine will throw a runtime error: `CHECK constraint failed: copies_total >= 0`.
