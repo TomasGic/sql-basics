@@ -36,4 +36,56 @@ Note: To build the database using the above commands, you will need to make sure
 
 If you want to rebuild the database again from scratch, delete the `library.db` file (you can run `rm library.db` in the terminal) and then follow the steps outlined above.
 
+## What I learned
+Below are some of the key lessons learned from this project: 
 
+1. **Left/Right joins - the order of the tables matters**:
+Unlike `INNER JOIN` AND `OUTER JOIN`, where the order of the tables in the query does not matter, this is not the case with `LEFT JOIN` AND `RIGHT JOIN`. When we use `LEFT JOIN` we want to keep all data from the left table (the table that appears immediately after the `FROM` keyword) and only the matched data from the right table (the table that appears after the `JOIN` keyword). For each row where there is no match in the right table, sql will put `NULL`. 
+
+**Example**: 
+```sql
+-- Which members have never borrowed anything?
+SELECT members.id, members.first_name, members.last_name FROM members
+LEFT JOIN loans ON members.id=loans.member_id
+WHERE loans.member_id IS NULL;
+```
+In this query, we wanted `members` to be the left table, so we wrote it before the `loans` table. If we used `loans` as the left table, the query would not make sense for the given question. 
+
+2. **`GROUP BY` is typically used in conjuction with aggregate functions, such as `COUNT`, `MAX`, `SUM`, etc**: 
+In SQL, `GROUP BY` takes the rows that have the same value in a specified column and groups them into a single summary row. This functionality only makes sense when we want to perform some calculation for each group. 
+
+**Example**: 
+```sql
+SELECT books.id AS book_id, books.title, COUNT(loans.id) AS times_borrowed FROM books
+JOIN loans ON books.id=loans.book_id
+GROUP BY books.id
+ORDER BY times_borrowed DESC;
+```
+In this example we wanted to see the number of times each book has been borrowed, with most popular books first. If we didn't use `GROUP BY`, SQLite would treat the whole joined table result as one group and collapse it into one single row like this: 
+
+```text
+book_id  title                                    times_borrowed
+-------  ---------------------------------------- --------------
+1        Practical Object-Oriented Design in Ruby 7
+```
+
+3. **`WHERE` clause is hardcoded to work only with raw, un-grouped rows**:
+
+Example:
+```sql
+SELECT loans.member_id, COUNT(loans.id) as loans_count FROM loans
+WHERE COUNT(loans.id) > 1
+GROUP BY loans.member_id;
+
+```
+Because the `WHERE` clause does not accept aggregate functions like `COUNT`, this query will throw an error: `misuse of aggregate: COUNT()`. Instead of WHERE, we have to use `HAVING`, which is specifically designed to handle filters with aggregate functions. Having this in mind (pun intented), the correct query will look like this:
+
+```sql
+SELECT loans.member_id, COUNT(loans.id) as loans_count FROM loans
+GROUP BY loans.member_id
+HAVING COUNT(loans.id) > 1;
+```
+
+4. **The order in which a query is executed does not always match the order in which it is written**:
+This is perhaps the most eye-opening realisation I had when practicing SQL in this project, and it applies predominantly to queries that read data from the database or in other words queries starting with the `SELECT` keyword.
+Even though the query starts with `SELECT`, the logical execution actually starts from the keyword `FROM`. This is because a database engine cannot select a column or evaluate a condition without knowing which table to look at first. 
