@@ -20,10 +20,10 @@ SELECT * FROM members WHERE joined_on > '2026-06-30';
 SELECT * FROM loans WHERE returned_on IS NULL;
 
 --list all loans that are overdue
-SELECT * FROM loans WHERE due_on > date('now')
+SELECT * FROM loans WHERE due_on < date('now') AND returned_on IS NULL;
 
 --list the number of books each author has written
-SELECT author_id, COUNT(*) FROM books GROUP BY author_id;
+SELECT author_id, COUNT(id) AS total_books_written FROM books GROUP BY author_id;
 
 -- list 3 most recently joined members
 SELECT * from members ORDER BY joined_on DESC LIMIT 3;
