@@ -31,10 +31,14 @@ We can draw the relationship between the tables in the following way:
 If you want to build the database, follow these steps in your terminal inside the `sql-basics` folder. 
 
 ```bash
-sqlite3 library.db < schema.sql
-sqlite3 library.db < seed.sql
-sqlite3 library.db ".tables" #should list all the 4 tables in the database
-sqlite3 library.db "SELECT * FROM books;" #should display all columns from books table
+sqlite3 -bail -cmd 'PRAGMA foreign_keys = ON;' library.db < schema.sql
+sqlite3 -bail -cmd 'PRAGMA foreign_keys = ON;' library.db < seed.sql
+sqlite3 -bail -cmd 'PRAGMA foreign_keys = ON;' library.db ".tables" #should list all the 4 tables in the database
+sqlite3 -bail -cmd 'PRAGMA foreign_keys = ON;' library.db "SELECT * FROM books;" #should display all columns from the books table
+sqlite3 -bail -cmd 'PRAGMA foreign_keys = ON;' library.db < queries/02_crud.sql
+#this will run all the queries in `queries/02_crud.sql`.
+sqlite3 -bail -cmd 'PRAGMA foreign_keys = ON;' library.db < queries/03_joins.sql
+#this will run all the queries in `queries/03_joins.sql'.
 ```
 Note: To build the database using the above commands, you will need to make sure you have SQLite installed on your computer. You can verify this by running `sqlite3 --version`.
 
