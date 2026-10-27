@@ -55,6 +55,28 @@ The `schema.sql` defines several constraints to prevent invalid data from being 
 **1. Foreign key constraints**: 
 Foreign key constraints protect the referential integrity of the database. If we add a record to a table where the foreign key references a primary key that doesn't exit in another table, the database engine will throw an error. In our case trying to add a loan with a book_id that doesn't exist in the `books` table will throw a runtime error: `FOREIGN KEY constraint failed`. This is because of this line that we added when creating the `loans` table: `FOREIGN KEY (book_id) REFERENCES books(id)`. It is important to note that in order for the foreign key constraint to work, we need to do run `PRAGMA foreign_keys = ON` at the start of each sqlite3 session. 
 
+Below is a short, reproducible check that proves that our foreign key constraints are enforced. You can open a new database connection using `sqlite3 -cmd 'PRAGMA foreign_keys = ON;' library.db` and paste in the sql code snippet to run the queries.
+
+```sql
+BEGIN TRANSACTION;
+-- Inserting a valid loan with a valid book and member id
+INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on) VALUES 
+(3, 1, '2026-10-27', '2026-11-10', NULL);
+
+-- Inserting an invalid loan with a non-existent book id
+INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on) VALUES 
+(13, 1, '2026-10-27', '2026-11-10', NULL);
+-- Result: Runtime error: FOREIGN KEY constraint failed
+
+-- Inserting an invalid loan with a non-existent member id
+INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on) VALUES 
+(3, 10, '2026-10-27', '2026-11-10', NULL);
+-- Result: Runtime error: FOREIGN KEY constraint failed
+
+-- Revert changes to keep sample data unchanged
+ROLLBACK;
+```
+
 **2. Constraints against duplicate records**: 
 If we want a table column in the database to only contain unique values, we can add a `UNIQUE` constraint to that column. In our database, we have set up the constraint to not allow two identical email addresses in the `members` table like this: `email TEXT NOT NULL UNIQUE`. Trying to add a member with an email address that already exists in the database will throw a runtime error: `UNIQUE constraint failed: members.email`.
 
