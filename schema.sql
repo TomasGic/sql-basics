@@ -28,7 +28,7 @@ CREATE TABLE loans (
     borrowed_on TEXT NOT NULL CHECK (borrowed_on IS date(borrowed_on)),
     due_on TEXT NOT NULL CHECK (
         due_on IS date(due_on) AND
-        due_on >= (borrowed_on, '+14 days')
+        due_on >= date(borrowed_on, '+14 days')
     ),
     returned_on TEXT CHECK (
         returned_on IS NULL OR
