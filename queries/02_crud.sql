@@ -1,10 +1,9 @@
 -- insert a new author, then a new book by that author
-INSERT INTO authors (name) VALUES ('Pat Shaughnessy
-');
+INSERT INTO authors (name) VALUES ('Pat Shaughnessy');
 
 INSERT INTO books (title, author_id, copies_total) VALUES (
     'Ruby Under a Microscope: An Illustrated Guide to Ruby Internals', 
-    (SELECT id FROM authors WHERE name = 'Pat Shaughnessy'), 
+    (SELECT id FROM authors WHERE name = 'Pat Shaughnessy' ORDER BY id DESC LIMIT 1), 
     2
 );
 
@@ -13,7 +12,7 @@ INSERT INTO members (first_name, last_name, email, joined_on) VALUES ('Tomas', '
 
 -- record a new loan (a member borrowing a book today)
 INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on) VALUES (
-    (SELECT id FROM books WHERE title = 'Ruby Under a Microscope: An Illustrated Guide to Ruby Internals'), 
+    (SELECT id FROM books WHERE title = 'Ruby Under a Microscope: An Illustrated Guide to Ruby Internals' ORDER BY id DESC LIMIT 1), 
     (SELECT id FROM members WHERE email = 'harvy@example.com'), 
     date('now'), 
     date('now', '+14 days'), 
