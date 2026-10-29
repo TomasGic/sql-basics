@@ -34,17 +34,17 @@ WHERE title = 'Practical Object-Oriented Design in Ruby';
 **What this query taught me**: 
 Unlike many programming languages and certain database systems, such as Microsoft SQL Server, SQLite does not support shorthand operators like += or -=. Therefore, in our `UPDATE` query we explicitly have to write the new value assignment to the variable like this:  `copies_total = copies_total + 1`.
 
-**4. Delete one member who does not have any loans**.
+**4. Delete one member with email 'harvy@example.com' only if there is no loan history
 
 ```sql
 DELETE FROM members
-WHERE id NOT IN (
+WHERE email = 'harvy@example.com' AND id NOT IN (
     SELECT member_id FROM loans
 );
 ```
 
 **What this query taught me**:
-This query is a nested query which consists of an inner query (`SELECT member_id FROM loans`) and outer query (`DELETE FROM members WHERE id NOT IN`). In order to correctly execute this query SQLite has to break it down into several steps.
+This query is a nested query which consists of an inner query (`SELECT member_id FROM loans`) and outer query (`WHERE email = 'harvy@example.com' AND id NOT IN`). In order to correctly execute this query SQLite has to break it down into several steps.
 
 * **Step 1: Run the inner query first**
 SQLite looks at the loans table, grabs every single member_id found inside it, and builds a temporary, internal list or "set" of IDs (in our case it's `[1, 2, 3, 4]`). 
@@ -53,9 +53,9 @@ SQLite looks at the loans table, grabs every single member_id found inside it, a
 It looks at the column `id` in the `members` table and checks whether each id is found in the set of ids created in step 1. 
 
 * **Step 3: Decision to keep or delete**
-    * If the ID is NOT in the list, SQLite marks that member row for deletion and deletes it.
+    * If the ID is NOT in the list and the email string equals `harvy@example.com`, SQLite marks that member row for deletion and deletes it.
 
-    * If the ID IS in the list, SQLite skips that row and leaves the   member untouched.
+    * If the ID is in the list or if the email string doesn't match `harvy@example.com`, SQLite skips that row and leaves the member untouched.
 
 ## Integrity checks 
 The `schema.sql` defines several constraints to prevent invalid data from being entered into the database. 
