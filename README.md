@@ -44,6 +44,17 @@ Note: To build the database using the above commands, you will need to make sure
 
 If you want to rebuild the database again from scratch, delete the `library.db` file (you can run `rm library.db` in the terminal) and then follow the steps outlined above.
 
+## Running JOIN queries and CRUD demonstration
+As mentioned above, the two files `queries/02_crud.sql` and `queries/03_join.sql` contain a variety of additional SQL queries to demonstrate the read, write, update and delete operations, as well as the use of various types of `JOIN` queries and how they can answer more complex questions about the database. 
+
+To execute the queries in these files, use the commands below:
+```bash
+sqlite3 -bail -cmd 'PRAGMA foreign_keys = ON;' library.db < 02_crud.sql
+sqlite3 -bail -cmd 'PRAGMA foreign_keys = ON;' library.db < 03_join.sql
+```
+
+Note: the queries will only work after building the database from `schema.sql` and `seed.sql`.
+
 ## What I learned
 Below are some of the key lessons learned from this project: 
 
