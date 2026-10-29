@@ -14,7 +14,7 @@ INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on) VALUES 
 SELECT * FROM books ORDER BY title;
 
 -- list all members who joined after August 30th 2026
-SELECT * FROM members WHERE joined_on > '2026-06-30';
+SELECT * FROM members WHERE joined_on > '2026-08-30';
 
 --list all loans that are not yet returned 
 SELECT * FROM loans WHERE returned_on IS NULL;
@@ -38,8 +38,8 @@ UPDATE books
 SET copies_total = copies_total + 1
 WHERE title = 'Practical Object-Oriented Design in Ruby';
 
---delete one member who does not have any loans
+--delete one member with email 'harvy@example.com' only if there is no loan history
 DELETE FROM members
-WHERE id NOT IN (
-    SELECT member_id from loans
+WHERE email = 'harvy@example.com' AND id NOT IN (
+    SELECT member_id FROM loans
 );
