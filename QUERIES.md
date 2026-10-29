@@ -41,8 +41,8 @@ This query is a nested query which consists of an inner query (`SELECT member_id
 * **Step 1: Run the inner query first**
 SQLite looks at the loans table, grabs every single member_id found inside it, and builds a temporary, internal list or "set" of IDs (in our case it's `[1, 2, 3, 4]`). 
 
-* **Step 2: SQLite scans the loans table row by row**
-It looks at the column `member_id` and checks whether each member_id is found in the set of ids created in step 1. 
+* **Step 2: SQLite scans the members table row by row**
+It looks at the column `id` in the `members` table and checks whether each id is found in the set of ids created in step 1. 
 
 * **Step 3: Decision to keep or delete**
     * If the ID is NOT in the list, SQLite marks that member row for deletion and deletes it.
