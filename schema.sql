@@ -18,16 +18,22 @@ CREATE TABLE members (
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
-    joined_on TEXT NOT NULL CHECK (date(joined_on) IS NOT NULL)
+    joined_on TEXT NOT NULL CHECK (joined_on IS date(joined_on))
 );
 
 CREATE TABLE loans (
     id INTEGER PRIMARY KEY,
     book_id INTEGER NOT NULL,
     member_id INTEGER NOT NULL,
-    borrowed_on TEXT NOT NULL,
-    due_on TEXT NOT NULL CHECK (due_on >= borrowed_on),
-    returned_on TEXT,
+    borrowed_on TEXT NOT NULL CHECK (borrowed_on IS date(borrowed_on)),
+    due_on TEXT NOT NULL CHECK (
+        due_on IS date(due_on) AND
+        due_on >= date(borrowed_on, '+14 days')
+    ),
+    returned_on TEXT CHECK (
+        returned_on IS NULL OR
+        (returned_on IS date(returned_on) AND returned_on >= borrowed_on)
+    ),
     FOREIGN KEY (book_id) REFERENCES books(id),
     FOREIGN KEY (member_id) REFERENCES members(id)
 );

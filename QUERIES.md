@@ -81,11 +81,67 @@ ROLLBACK;
 If we want a table column in the database to only contain unique values, we can add a `UNIQUE` constraint to that column. In our database, we have set up the constraint to not allow two identical email addresses in the `members` table like this: `email TEXT NOT NULL UNIQUE`. Trying to add a member with an email address that already exists in the database will throw a runtime error: `UNIQUE constraint failed: members.email`.
 
 **3. Constraints against custom math/logic rules**:
-The `squema.sql` file defines three custom logic rules using the `CHECK` SQL keyword. 
-* `joined_on TEXT NOT NULL CHECK (date(joined_on) IS NOT NULL)`: This ensures that the value in the `joined_on` column is a date. 
+The `squema.sql` file defines several custom logic rules using the `CHECK` SQL keyword:
 
 * `copies_total INTEGER NOT NULL CHECK (copies_total >= 0)`: Does not allow values below 0 to be entered into the `copies_total` column.
 
 * `due_on TEXT NOT NULL CHECK (due_on >= borrowed_on)`: This ensures that the due date cannot be before the date when the book was borrowed on. 
 
 If we try to insert a book with `copies_total = -1`, the database engine will throw a runtime error: `CHECK constraint failed: copies_total >= 0`.
+
+**4. Constraints against invalid dates**:
+The `schema.sql` file lays down several constraints against invalid dates. Most of the date columns appear in the `loans` table: 
+
+* `borrowed_on TEXT NOT NULL CHECK (borrowed_on IS date(borrowed_on))`: this check ensures that `borrowed_on` is a real calendar date and that it is in format `YYYY-MM-DD`.
+
+* `due_on TEXT NOT NULL CHECK (due_on is date(due_on) AND due_on >= date(borrowed_on + '14 days'))`:
+this check ensures that `due_on` is a real calendar date in format `YYYY-MM-DD` and that it is not less than 14 days after the borrowed date. 
+
+* `returned_on TEXT CHECK (returned_on IS NULL OR (returned_on IS date(returned_on) AND returned_on >= borrowed_on))`: this ensures that returned_on is a real calendar date in format `YYYY-MM-DD` and that it is not before the borrowed date. 
+
+Below is a set of checks that you can run yourself to verify the integrity of the date columns:
+
+```sql
+BEGIN TRANSACTION;
+-- insert a loan with real calendar dates in the expected format (YYYY-MM-DD) that follow the business logic (due date is borrowed_on + 14 days, returned_on is not before borrowed_on)
+INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on) 
+VALUES ( 1, 1, '2026-09-01', '2026-09-15', '2026-09-10');
+-- This will run successfully
+ROLLBACK;
+
+-- insert a loan with returned date being the same as borrowed date
+INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on) 
+VALUES ( 1, 4, '2026-09-01', '2026-09-15', '2026-09-01');
+-- This will run successfully
+
+-- insert a loan with returned_on as an impossible calendar date (2026-02-30):
+BEGIN TRANSACTION;
+INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on)
+VALUES (1, 2, '2026-02-01', '2026-02-15', '2026-02-30');
+-- Result: Runtime error: CHECK constraint failed: returned_on IS NULL OR
+-- (returned_on IS date(returned_on) AND returned_on >= borrowed_on)
+ROLLBACK;
+
+-- insert a loan with borrowed_on in julian day format
+INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on)
+VALUES (1, 3, '2460825.5', '2026-06-25', '2026-06-30');
+-- Result: Runtime error: CHECK constraint failed: borrowed_on IS date(borrowed_on)
+
+-- insert a loan with invalid due date
+INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on)
+VALUES (1, 1, '2026-10-01', 'not-a-date', NULL);
+-- Result: Runtime error: CHECK constraint failed: due_on IS date(due_on) AND
+-- due_on >= date(borrowed_on, '+14 days')
+
+-- insert a loan with returned date before borrowed_date
+INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on) 
+VALUES ( 2, 2, '2026-09-01', '2026-09-15', '2026-08-10');
+-- Result: Runtime error: CHECK constraint failed: returned_on IS NULL OR
+-- (returned_on IS date(returned_on) AND returned_on >= borrowed_on)
+
+-- insert a loan with due date which is only 10 days after the borrowed date;
+INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on) 
+VALUES ( 3, 3, '2026-09-01', '2026-09-11', '2026-09-10');
+-- Result: Runtime error: CHECK constraint failed: due_on IS date(due_on) AND
+-- due_on >= date(borrowed_on, '+14 days') 
+
