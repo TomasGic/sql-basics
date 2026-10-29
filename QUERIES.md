@@ -2,10 +2,18 @@
 **1. Record a new loan (a member borrowing a book today)**
 
 ```sql
-INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on) VALUES (7, 5, date('now'), date('now', '+14 days'), NULL);
+INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on) VALUES (
+    (SELECT id FROM books WHERE title = 'Ruby Under a Microscope: An Illustrated Guide to Ruby Internals'), 
+    (SELECT id FROM members WHERE email = 'harvy@example.com'), 
+    date('now'), 
+    date('now', '+14 days'), 
+    NULL
+);
 ```
 
 **What this query taught me**: The query inserts a new row into the `loans` table. One thing worth pointing out is that the date function in SQL does not use math operators, such as `+`. It is designed to accept a specific structure: a base time string and optional modifiers separated by commas. If we want to calculate a new date which is 14 days from now, we need to pass`+14 days` as a second argument (modifier) to the date function (first argument being `now`). SQLite's internal date parser specifically looks for strings starting with + or - to add or subtract time.
+
+Another important point to mention about this query is that it uses two subqueries to dynamically select the book's id and the borrower's id instead of hardcoding them. This because hardcoding the ids is more prone to errors and selecting them dynamically based on book title and member's email makes the query more intentional and less of a guesswork.
 
 
 **2. List all members who joined after August 30th 2026**
