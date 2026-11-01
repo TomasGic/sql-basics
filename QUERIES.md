@@ -2,10 +2,18 @@
 **1. Record a new loan (a member borrowing a book today)**
 
 ```sql
-INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on) VALUES (7, 5, date('now'), date('now', '+14 days'), NULL);
+INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on) VALUES (
+    (SELECT id FROM books WHERE title = 'Ruby Under a Microscope: An Illustrated Guide to Ruby Internals'), 
+    (SELECT id FROM members WHERE email = 'harvy@example.com'), 
+    date('now'), 
+    date('now', '+14 days'), 
+    NULL
+);
 ```
 
 **What this query taught me**: The query inserts a new row into the `loans` table. One thing worth pointing out is that the date function in SQL does not use math operators, such as `+`. It is designed to accept a specific structure: a base time string and optional modifiers separated by commas. If we want to calculate a new date which is 14 days from now, we need to pass`+14 days` as a second argument (modifier) to the date function (first argument being `now`). SQLite's internal date parser specifically looks for strings starting with + or - to add or subtract time.
+
+Another important point to mention about this query is that it uses two subqueries to dynamically select the book's id and the borrower's id instead of hardcoding them. This because hardcoding the ids is more prone to errors and selecting them dynamically based on book title and member's email makes the query more intentional and less of a guesswork.
 
 
 **2. List all members who joined after August 30th 2026**
@@ -26,17 +34,17 @@ WHERE title = 'Practical Object-Oriented Design in Ruby';
 **What this query taught me**: 
 Unlike many programming languages and certain database systems, such as Microsoft SQL Server, SQLite does not support shorthand operators like += or -=. Therefore, in our `UPDATE` query we explicitly have to write the new value assignment to the variable like this:  `copies_total = copies_total + 1`.
 
-**4. Delete one member who does not have any loans**.
+**4. Delete one member with email 'harvy@example.com' only if there is no loan history
 
 ```sql
 DELETE FROM members
-WHERE id NOT IN (
+WHERE email = 'harvy@example.com' AND id NOT IN (
     SELECT member_id FROM loans
 );
 ```
 
 **What this query taught me**:
-This query is a nested query which consists of an inner query (`SELECT member_id FROM loans`) and outer query (`DELETE FROM members WHERE id NOT IN`). In order to correctly execute this query SQLite has to break it down into several steps.
+This query is a nested query which consists of an inner query (`SELECT member_id FROM loans`) and outer query (`WHERE email = 'harvy@example.com' AND id NOT IN`). In order to correctly execute this query SQLite has to break it down into several steps.
 
 * **Step 1: Run the inner query first**
 SQLite looks at the loans table, grabs every single member_id found inside it, and builds a temporary, internal list or "set" of IDs (in our case it's `[1, 2, 3, 4]`). 
@@ -45,9 +53,9 @@ SQLite looks at the loans table, grabs every single member_id found inside it, a
 It looks at the column `id` in the `members` table and checks whether each id is found in the set of ids created in step 1. 
 
 * **Step 3: Decision to keep or delete**
-    * If the ID is NOT in the list, SQLite marks that member row for deletion and deletes it.
+    * If the ID is NOT in the list and the email string equals `harvy@example.com`, SQLite marks that member row for deletion and deletes it.
 
-    * If the ID IS in the list, SQLite skips that row and leaves the   member untouched.
+    * If the ID is in the list or if the email string doesn't match `harvy@example.com`, SQLite skips that row and leaves the member untouched.
 
 ## Integrity checks 
 The `schema.sql` defines several constraints to prevent invalid data from being entered into the database. 

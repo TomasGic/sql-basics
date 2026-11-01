@@ -1,14 +1,31 @@
 -- insert a new author, then a new book by that author
-INSERT INTO authors (name) VALUES ('Pat Shaughnessy
-');
+INSERT INTO authors (name) VALUES ('Pat Shaughnessy');
 
-INSERT INTO books (title, author_id, copies_total) VALUES ('Ruby Under a Microscope: An Illustrated Guide to Ruby Internals', 4, 2);
+INSERT INTO books (title, author_id, copies_total) VALUES (
+    'Ruby Under a Microscope: An Illustrated Guide to Ruby Internals', 
+    (SELECT id FROM authors WHERE name = 'Pat Shaughnessy' ORDER BY id DESC LIMIT 1), 
+    2
+);
 
 -- insert a new member
 INSERT INTO members (first_name, last_name, email, joined_on) VALUES ('Tomas', 'Harvanek', 'harvy@example.com', '2026-10-22');
 
 -- record a new loan (a member borrowing a book today)
-INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on) VALUES (7, 5, date('now'), date('now', '+14 days'), NULL);
+INSERT INTO loans (book_id, member_id, borrowed_on, due_on, returned_on) VALUES (
+    (SELECT id FROM books WHERE title = 'Ruby Under a Microscope: An Illustrated Guide to Ruby Internals' ORDER BY id DESC LIMIT 1), 
+    (SELECT id FROM members WHERE email = 'harvy@example.com'), 
+    date('now'), 
+    date('now', '+14 days'), 
+    NULL
+);
+
+-- list the newly created loan along with the borrower's email, book title and author
+SELECT loans.id, loans.borrowed_on, loans.due_on, members.email, books.title, authors.name AS author
+FROM loans
+JOIN members ON members.id=loans.member_id
+JOIN books ON books.id=loans.book_id
+JOIN authors ON authors.id=books.author_id
+WHERE members.email = 'harvy@example.com';
 
 -- list all books sorted by title
 SELECT * FROM books ORDER BY title;
